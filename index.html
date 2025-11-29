@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Meus Links — Modelo Profissional</title>
+  <meta name="description" content="Agregador de links profissional pronto para você inserir fotos e links." />
+  <style>
+    /* ----- Reset & base ----- */
+    :root{
+      --bg1: linear-gradient(135deg,#0f172a 0%, #071028 100%);
+      --card: rgba(255,255,255,0.04);
+      --accent: #ff006a;
+      --muted: rgba(255,255,255,0.6);
+      --glass: rgba(255,255,255,0.06);
+      --radius: 18px;
+      --maxw: 760px;
+      --gap: 14px;
+      --btn-h: 56px;
+      color-scheme: dark;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body,#app{height:100%}
+    body{
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: var(--bg1);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;align-items:center;justify-content:center;padding:28px;
+      color:#fff;
+    }
+
+    /* ----- Shell ----- */
+    .shell{
+      width:100%;max-width:var(--maxw);background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border-radius:24px;padding:28px;box-shadow:0 10px 30px rgba(2,6,23,0.6);backdrop-filter: blur(6px);
+      display:grid;grid-template-columns: 210px 1fr;gap:28px;align-items:start;
+    }
+    /* mobile stack */
+    @media (max-width:720px){
+      .shell{grid-template-columns:1fr;padding:20px}
+    }
+
+    /* ----- Left column (perfil) ----- */
+    .profile{
+      display:flex;flex-direction:column;align-items:center;text-align:center;padding:8px;
+      gap:12px;
+    }
+    .avatar{
+      width:160px;height:160px;border-radius:28px;overflow:hidden;flex-shrink:0;
+      border:4px solid rgba(255,255,255,0.06);background:linear-gradient(180deg,#0b1220,#071126);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .handle{font-size:20px;font-weight:700}
+    .sub{font-size:13px;color:var(--muted)}
+
+    .socials{display:flex;gap:10px;margin-top:6px}
+    .socials a{width:40px;height:40px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:var(--glass);text-decoration:none;color:#fff;font-weight:600}
+
+    /* ----- Right column (links) ----- */
+    .content{display:flex;flex-direction:column;gap:14px}
+    .bio{color:var(--muted);font-size:14px}
+
+    .links{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+    .link-btn{
+      display:flex;align-items:center;gap:12px;padding:0 16px;height:var(--btn-h);border-radius:14px;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));text-decoration:none;color:#fff;font-weight:600;box-shadow: 0 6px 18px rgba(2,6,23,0.5);
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease;overflow:hidden;position:relative
+    }
+    .link-btn:hover{transform:translateY(-6px);box-shadow:0 18px 30px rgba(2,6,23,0.6)}
+    .link-btn .favicon{width:44px;height:44px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));flex-shrink:0}
+    .link-btn .meta{flex:1;text-align:left}
+    .link-btn .meta .title{font-size:16px}
+    .link-btn .meta .desc{font-size:12px;color:var(--muted);margin-top:2px}
+    .link-actions{display:flex;gap:8px;align-items:center}
+    .small-btn{height:40px;min-width:40px;border-radius:10px;padding:8px 10px;background:transparent;border:1px solid rgba(255,255,255,0.06);display:inline-flex;align-items:center;justify-content:center}
+
+    /* copy toast */
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;background:rgba(0,0,0,0.6);padding:10px 16px;border-radius:999px;color:#fff;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s ease}
+    .toast.show{opacity:1;pointer-events:auto}
+
+    /* header utilities */
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .meta-row{display:flex;gap:8px;align-items:center}
+    .edit-note{font-size:12px;color:var(--muted)}
+
+    /* Theme toggle */
+    .toggle{display:inline-flex;align-items:center;background:rgba(255,255,255,0.03);border-radius:999px;padding:6px}
+    .toggle button{background:none;border:none;color:var(--muted);padding:6px;border-radius:8px}
+
+    /* subtle entrance animation */
+    .shell{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+    .shell.ready{opacity:1;transform:none}
+
+    /* small screens adjustments */
+    @media (max-width:420px){
+      .avatar{width:120px;height:120px;border-radius:16px}
+      .link-btn .favicon{width:36px;height:36px}
+      .link-btn{height:52px}
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="shell" id="shell">
+
+      <!-- LEFT: Perfil (substitua imagem e texto) -->
+      <div class="profile">
+        <div class="avatar" id="avatar">
+          <!-- Substitua o src abaixo pela URL da sua foto ou arraste aqui -->
+          <img id="avatarImg" src="PLACEHOLDER_AVATAR.jpg" alt="Sua foto" />
+        </div>
+        <div>
+          <div class="handle" id="handle">@SEU_USUARIO</div>
+          <div class="sub" id="role">Sua função ou slogan — ex: Criador de Conteúdo</div>
+        </div>
+
+        <div class="socials" id="socials">
+          <!-- Substitua hrefs pelos seus perfis -->
+          <a href="#" data-placeholder="instagram">IG</a>
+          <a href="#" data-placeholder="whatsapp">WA</a>
+          <a href="#" data-placeholder="youtube">YT</a>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="small-btn" id="copyProfile">Copiar link</button>
+          <div class="toggle" title="Alternar tema">
+            <button id="themeToggle">🌓</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Links -->
+      <div class="content">
+        <div class="header-row">
+          <div>
+            <div class="bio" id="bio">Aqui vai uma pequena descrição sua — especialidade, serviços ou chamada para ação. Substitua com o que quiser.</div>
+            <div class="edit-note">(As imagens e links abaixo são placeholders — substitua pelos seus.)</div>
+          </div>
+          <div class="meta-row">
+            <div class="edit-note">Pronto para celular ✔</div>
+          </div>
+        </div>
+
+        <div class="links" id="links">
+          <!-- Botões de link: troque o href por seus links -->
+          <a class="link-btn" href="LINK_1" target="_blank" rel="noopener noreferrer">
+            <div class="favicon">🔗</div>
+            <div class="meta">
+              <div class="title">Nome do Link 1</div>
+              <div class="desc">Descrição curta ou chamada para ação</div>
+            </div>
+            <div class="link-actions">
+              <button class="small-btn" data-copy="LINK_1">Copiar</button>
+            </div>
+          </a>
+
+          <a class="link-btn" href="LINK_2" target="_blank" rel="noopener noreferrer">
+            <div class="favicon">💬</div>
+            <div class="meta">
+              <div class="title">Contato / WhatsApp</div>
+              <div class="desc">Abra conversa ou agende</div>
+            </div>
+            <div class="link-actions">
+              <button class="small-btn" data-copy="LINK_2">Copiar</button>
+            </div>
+          </a>
+
+          <a class="link-btn" href="LINK_3" target="_blank" rel="noopener noreferrer">
+            <div class="favicon">🎥</div>
+            <div class="meta">
+              <div class="title">YouTube / Vídeo</div>
+              <div class="desc">Veja meu canal</div>
+            </div>
+            <div class="link-actions">
+              <button class="small-btn" data-copy="LINK_3">Copiar</button>
+            </div>
+          </a>
+
+          <a class="link-btn" href="LINK_4" target="_blank" rel="noopener noreferrer">
+            <div class="favicon">🛒</div>
+            <div class="meta">
+              <div class="title">Loja / Produto</div>
+              <div class="desc">Compre aqui</div>
+            </div>
+            <div class="link-actions">
+              <button class="small-btn" data-copy="LINK_4">Copiar</button>
+            </div>
+          </a>
+
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:6px">
+          <button class="small-btn" id="downloadBtn">Baixar HTML</button>
+          <button class="small-btn" id="previewBtn">Abrir Pré-visualização</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Link copiado!</div>
+
+  <script>
+    // ====== Init animations ======
+    window.addEventListener('load',()=>{
+      document.getElementById('shell').classList.add('ready');
+    });
+
+    // ====== Simple theme toggle (dark/light) - keeps minimal styling changes ======
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click',()=>{
+      const root = document.documentElement;
+      if(root.style.getPropertyValue('--bg1')?.includes('#fefefe')){
+        // switch to dark
+        root.style.setProperty('--bg1','linear-gradient(135deg,#0f172a 0%, #071028 100%)');
+        root.style.setProperty('--card','rgba(255,255,255,0.04)');
+        document.body.style.color = '#fff';
+      }else{
+        // switch to light
+        root.style.setProperty('--bg1','linear-gradient(135deg,#ffffff 0%, #f2f5f9 100%)');
+        root.style.setProperty('--card','rgba(0,0,0,0.04)');
+        document.body.style.color = '#0b1720';
+      }
+    });
+
+    // ====== Copy-to-clipboard with toast ======
+    const toast = document.getElementById('toast');
+    function showToast(msg='Copiado!'){
+      toast.textContent = msg; toast.classList.add('show');
+      clearTimeout(window._toastTimer); window._toastTimer=setTimeout(()=>toast.classList.remove('show'),1800);
+    }
+
+    document.querySelectorAll('[data-copy]').forEach(btn=>{
+      btn.addEventListener('click', async (e)=>{
+        e.preventDefault();
+        const toCopy = btn.getAttribute('data-copy');
+        try{ await navigator.clipboard.writeText(toCopy); showToast('Link copiado!'); }
+        catch(err){ showToast('Não foi possível copiar'); }
+      });
+    });
+
+    // copy profile link (placeholder behaviour)
+    document.getElementById('copyProfile').addEventListener('click',async()=>{
+      const url = location.href; try{ await navigator.clipboard.writeText(url); showToast('URL da página copiada'); }catch{ showToast('Erro ao copiar'); }
+    });
+
+    // ====== Avatar drag & drop replacement (arrastar imagem local) ======
+    const avatarDrop = document.getElementById('avatar');
+    const avatarImg = document.getElementById('avatarImg');
+    avatarDrop.addEventListener('dragover', e=>{ e.preventDefault(); avatarDrop.style.opacity='0.8'; });
+    avatarDrop.addEventListener('dragleave', e=>{ avatarDrop.style.opacity='1'; });
+    avatarDrop.addEventListener('drop', e=>{
+      e.preventDefault(); avatarDrop.style.opacity='1';
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ()=> avatarImg.src = reader.result;
+      reader.readAsDataURL(f);
+    });
+
+    // ====== Download current HTML content for publicar em GitHub Pages / Netlify ======
+    document.getElementById('downloadBtn').addEventListener('click', ()=>{
+      const html = `<!doctype html>\n${document.documentElement.outerHTML}`;
+      const blob = new Blob([html],{type:'text/html'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'meus-links.html'; a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    // ====== Preview (abre em nova aba com o HTML atual) ======
+    document.getElementById('previewBtn').addEventListener('click', ()=>{
+      const html = `<!doctype html>\n${document.documentElement.outerHTML}`;
+      const w = window.open(); w.document.open(); w.document.write(html); w.document.close();
+    });
+
+    // ====== Accessibility: enable keyboard on link buttons (enter to open) ======
+    document.querySelectorAll('.link-btn').forEach(a=>{
+      a.setAttribute('tabindex','0');
+      a.addEventListener('keydown',(e)=>{ if(e.key==='Enter') window.open(a.href,'_blank'); });
+    });
+
+    // ====== Small helper: replace placeholders quickly via URL params (ex: ?u=seuHandle&img=link) ======
+    (function applyUrlParams(){
+      const params = new URLSearchParams(location.search);
+      const u = params.get('u'); const img = params.get('img'); const bio = params.get('bio');
+      if(u) document.getElementById('handle').textContent = u;
+      if(img) document.getElementById('avatarImg').src = img;
+      if(bio) document.getElementById('bio').textContent = decodeURIComponent(bio);
+    })();
+
+    // ====== Notes para o usuário (não altere): ======
+    /*
+      - Substitua as strings PLACEHOLDER_AVATAR.jpg, LINK_1, LINK_2 etc. pelos seus links reais.
+      - Troque textos (Nome do Link, Descrição) para cada botão.
+      - Hospede o arquivo resultante no GitHub Pages, Netlify ou Vercel para usar na bio do Instagram.
+      - Para testar em seu celular, abra o arquivo diretamente no navegador ou publique em um host gratuito.
+    */
+  </script>
+</body>
+</html>
